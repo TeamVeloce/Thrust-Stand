@@ -15,7 +15,7 @@ void setup() {
 void loop() {
   delay(1000);  // Update every second
   detachInterrupt(digitalPinToInterrupt(irSensorPin));
-  rpm = (count * 60) / 7.5;  // Calculate RPM
+  rpm = (count * 60) / 3;  // Calculate RPM
   Serial.print("RPM: ");
   Serial.println(rpm);
   count = 0;
