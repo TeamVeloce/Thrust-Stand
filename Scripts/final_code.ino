@@ -12,9 +12,8 @@ unsigned long t = 0;
 
 float average = 0;
 
-const int irSensorPin = 8;
+const int irSensorPin = 2;
 unsigned int rpm;
-unsigned long timeOld;
 volatile unsigned long count;
 
 
@@ -31,17 +30,16 @@ void setup() {
   Serial.println();
   Serial.println("Starting...");
 
-  pinMode(irSensorPin, INPUT);
-
   LoadCell.begin();
   //LoadCell.setReverseOutput(); //uncomment to turn a negative output value to positive
   float calibrationValue;
   calibrationValue = 700.1;
   unsigned long stabilizingtime = 2000;
   boolean _tare = true;
+
   count = 0;
   rpm = 0;
-  timeOld = 0;
+ 
 
   LoadCell.start(stabilizingtime, _tare);
 
@@ -54,6 +52,7 @@ void setup() {
     Serial.println("Startup is complete");
   }
 
+  pinMode(irSensorPin, INPUT);
   attachInterrupt(digitalPinToInterrupt(irSensorPin), countPulses, FALLING);
 
   LC.onRun(LC_code);
@@ -126,7 +125,7 @@ void CS_code(){
     delay(1);
   }
   Serial.print(" | ");
-  Serial.println(average + 28.6);
+  Serial.println(average -9.39);
 }
 
 void countPulses(){
