@@ -3,6 +3,7 @@
 #include <Arduino.h>
 #include <Thread.h>
 #include <ThreadController.h>
+#define ANALOG_IN_PIN A1
 
 const int HX711_dout = 4;
 const int HX711_sck = 5;
@@ -20,6 +21,12 @@ volatile unsigned long count;
 
 float cs_callibration_factor = -9.36;
 
+float adc_voltage = 0.0;
+float in_voltage = 0.0;
+float R1 = 30000.0;
+float R2 = 7500.0; 
+int adc_value = 0;
+float ref_voltage = 5.0;
 
 HX711_ADC LoadCell(HX711_dout,HX711_sck);
 ThreadController control = ThreadController();
@@ -27,8 +34,9 @@ ThreadController control = ThreadController();
 Thread LC = Thread();
 Thread CS = Thread();
 Thread TM = Thread();
+Thread VS = Thread();
 
-float vals[3];
+float vals[4];
 
 
 void setup() {
@@ -64,22 +72,28 @@ void setup() {
   LC.onRun(LC_code);
   CS.onRun(CS_code);
   TM.onRun(TM_code);
+  VS.onRun(VS_code);
 
   control.add(&LC);
   control.add(&CS);
   control.add(&TM);
+  control.add(&VS);
 
 }
 
 void loop() {
   control.run();
-  Serial.println(String(vals[0])+" "+String(vals[1])+" "+String(vals[2]));
+  Serial.println(String(vals[0])+" "+String(vals[1])+" "+String(vals[2])+" "+String(vals[3]));
   memset(vals, 0, sizeof(vals));
 }
+
+
 
 void IRinterrupt() {
   counter++;
 }
+
+
 
 void TM_code(){
   unsigned long currentMillis = millis();
@@ -93,6 +107,15 @@ void TM_code(){
     vals[0] = rpm;
   }
 
+}
+
+
+
+void VS_code(){
+  adc_value = analogRead(ANALOG_IN_PIN);
+  adc_voltage  = (adc_value * ref_voltage) / 1024.0; 
+  in_voltage = adc_voltage / (R2/(R1+R2)) ; 
+  vals[3] = in_voltage;
 }
 
 
@@ -130,4 +153,3 @@ void CS_code(){
   }
   vals[2] = (average + cs_callibration_factor)*100;
 }
-
