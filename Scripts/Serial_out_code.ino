@@ -3,7 +3,6 @@
 #include <Arduino.h>
 #include <Thread.h>
 #include <ThreadController.h>
-#include <SPI.h>
 
 const int HX711_dout = 4;
 const int HX711_sck = 5;
