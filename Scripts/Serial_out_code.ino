@@ -12,11 +12,14 @@ unsigned long t = 0;
 
 float average = 0;
 
+volatile unsigned int counter = 0;  // Counter variable for revolutions
+unsigned long previousMillis = 0;  // Variable to store previous time
+
 const int irSensorPin = 2;
 unsigned int rpm;
 volatile unsigned long count;
 
-float cs_callibration_factor = -9.39;
+float cs_callibration_factor = -9.36;
 
 
 HX711_ADC LoadCell(HX711_dout,HX711_sck);
@@ -31,8 +34,8 @@ float vals[3];
 
 void setup() {
   Serial.begin(9600); delay(10);
-  Serial.println();
-  Serial.println("Starting...");
+  //Serial.println();
+  //Serial.println("Starting...");
 
   LoadCell.begin();
   //LoadCell.setReverseOutput(); //uncomment to turn a negative output value to positive
@@ -52,12 +55,12 @@ void setup() {
     while (1);
   }
   else {
-    LoadCell.setCalFactor(calibrationValue);41
-+    Serial.println("Startup is complete");
+    LoadCell.setCalFactor(calibrationValue);
+        //Serial.println("Startup is complete");
   }
 
   pinMode(irSensorPin, INPUT);
-  attachInterrupt(digitalPinToInterrupt(irSensorPin), countPulses, FALLING);
+  attachInterrupt(digitalPinToInterrupt(irSensorPin), IRinterrupt, FALLING);
 
   LC.onRun(LC_code);
   CS.onRun(CS_code);
@@ -75,15 +78,22 @@ void loop() {
   memset(vals, 0, sizeof(vals));
 }
 
-
+void IRinterrupt() {
+  counter++;
+}
 
 void TM_code(){
-  delay(1000);  // Update every second
-  detachInterrupt(digitalPinToInterrupt(irSensorPin));
-  rpm = (count * 60) / 3;  // Calculate RPM
-  vals[0] = rpm;
-  count = 0;
-  attachInterrupt(digitalPinToInterrupt(irSensorPin), countPulses, FALLING);
+  unsigned long currentMillis = millis();
+
+  if (currentMillis - previousMillis >= 1000) {
+    detachInterrupt(digitalPinToInterrupt(irSensorPin));
+    rpm = (counter / 3) * 60;  // Calculate RPM
+    counter = 0;
+    attachInterrupt(digitalPinToInterrupt(irSensorPin), IRinterrupt, FALLING);
+    previousMillis = currentMillis;
+    vals[0] = rpm;
+  }
+
 }
 
 
@@ -119,9 +129,6 @@ void CS_code(){
     //(.044 * analogRead(A0) -3.78) for 30A mode
     delay(1);
   }
-  vals[2] = average + cs_callibration_factor;
+  vals[2] = (average + cs_callibration_factor)*100;
 }
 
-void countPulses(){
-  count++;
-}
