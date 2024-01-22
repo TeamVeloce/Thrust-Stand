@@ -13,6 +13,7 @@ a1=[]
 current_vals = []
 thrust_vals = []
 rpm_vals = []
+voltage_vals = []
 
 x_vals=[0]
 i=0
@@ -29,12 +30,13 @@ for i in range(l):
     
     current_vals.append(a1[2])
     thrust_vals.append(a1[1])
-    rpm_vals.append(a1[0])  
-    print(current_vals[ctr])
+    rpm_vals.append(a1[0])
+    voltage_vals.append(a1[3])  
+    #print(current_vals[ctr])
     
     plt.xlabel('current(mA)', fontweight='bold', horizontalalignment='center')
     plt.ylabel('RPM', fontweight='bold', horizontalalignment='center')
-    ax1.plot(current_vals[ctr],rpm_vals[ctr],color='b')
+    ax1.plot(current_vals[ctr],voltage_vals[ctr],color='b')
     fig1.canvas.draw()
     ax1.set_xlim(left=max(0,x_vals[0]-5), right=x_vals[0]+10)
     ctr = ctr+1
@@ -42,4 +44,3 @@ for i in range(l):
     plt.pause(0.0001)
 
 plt.show()
-
