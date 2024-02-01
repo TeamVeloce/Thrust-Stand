@@ -2,6 +2,7 @@
 #include <EEPROM.h>
 #include <Arduino.h>
 #include <Thread.h>
+#include <Servo.h>
 #include <ThreadController.h>
 #define ANALOG_IN_PIN A1
 
@@ -19,7 +20,9 @@ const int irSensorPin = 2;
 unsigned int rpm;
 volatile unsigned long count;
 
-float cs_callibration_factor = -9.36;
+float cs_callibration_factor;
+unsigned long start;
+int Speed; 
 
 float adc_voltage = 0.0;
 float in_voltage = 0.0;
@@ -30,6 +33,7 @@ float ref_voltage = 5.0;
 
 HX711_ADC LoadCell(HX711_dout,HX711_sck);
 ThreadController control = ThreadController();
+Servo ESC; 
 
 Thread LC = Thread();
 Thread CS = Thread();
@@ -41,8 +45,11 @@ float vals[4];
 
 void setup() {
   Serial.begin(9600); delay(10);
-  //Serial.println();
-  //Serial.println("Starting...");
+  ESC.attach(6,1000,2000);
+  ESC.write(0);
+  start = millis();
+  callibration();
+  average = 0;
 
   LoadCell.begin();
   //LoadCell.setReverseOutput(); //uncomment to turn a negative output value to positive
@@ -82,6 +89,9 @@ void setup() {
 }
 
 void loop() {
+  Speed = analogRead(A3);
+  Speed = map(Speed, 0, 1023, 0, 180);
+  ESC.write(Speed);
   control.run();
   Serial.println(String(vals[0])+" "+String(vals[1])+" "+String(vals[2])+" "+String(vals[3]));
   memset(vals, 0, sizeof(vals));
@@ -144,12 +154,28 @@ void LC_code(){
 
 void CS_code(){
   float average = 0;
-  for(int i = 0; i < 500; i++) {
-    average = average + (.044 * analogRead(A0) -3.78)/1000;
+  for(int i = 0; i < 1000; i++) {
+    average = average + (.044 * analogRead(A2) -3.78)/1000;
     //(.0264 * analogRead(A0) -13.51) ;//this is 
     //(.19 * analogRead(A0) -25) for 20A mode and 
     //(.044 * analogRead(A0) -3.78) for 30A mode
     delay(1);
   }
-  vals[2] = (average + cs_callibration_factor)*100;
+  vals[2] = (average - cs_callibration_factor);
+}
+
+
+
+void callibration(){
+  while ((millis() - start) <= 5500){
+    average = 0;
+    for(int i = 0; i < 1000; i++) {
+    average = average + (.044 * analogRead(A2) -3.78)/1000;
+    delay(1);
+  }
+  cs_callibration_factor = cs_callibration_factor + average;
+  }
+  cs_callibration_factor = cs_callibration_factor/5;
+  Serial.print("Callibration factor : ");
+  Serial.println(cs_callibration_factor);
 }
