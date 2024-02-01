@@ -1,7 +1,9 @@
 import matplotlib.pyplot as plt
 import serial
+import csv
+#import pdb
 
-ser = serial.Serial('COM32 ',9600)
+ser = serial.Serial('COM5',9600)
 fig1 = plt.figure(figsize=(7,3))
 fig2 = plt.figure(figsize=(7,3))
 fig3 = plt.figure(figsize=(7,3))
@@ -19,6 +21,7 @@ fig4.show()
 
 a1=[]
 
+
 current_vals = []
 thrust_vals = []
 rpm_vals = []
@@ -30,13 +33,16 @@ l=200
 ser.close()
 ser.open()
 ctr =0
-
+k = 0
 for i in range(l):
     ser1 = ser.readline().decode('ascii')
     a1=[]
-    ser_array = [float(val) for val in ser1.split()]  # Assuming values are space-separated
+    ser_array = [float(val) for val in ser1[:-2].split()]  # Assuming values are space-separated
+    with open('abc.csv', 'a', encoding='UTF8') as f:
+        writer = csv.writer(f)
+        writer.writerow(ser_array)
     a1.extend(ser_array)
-    
+    #pdb.set_trace()
     current_vals.append(a1[2])
     thrust_vals.append(a1[1])
     rpm_vals.append(a1[0])
@@ -71,9 +77,10 @@ for i in range(l):
     ax4.plot(thrust_vals,color='b')
     fig4.canvas.draw()
     ax4.set_xlim(left=max(0,x_vals[3]-30), right=x_vals[3]+60)
-    
     ctr = ctr+1
-        
     plt.pause(0.0001)
 
+
+
 plt.show()
+ser.close()
