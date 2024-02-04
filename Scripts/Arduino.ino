@@ -16,7 +16,7 @@ float average = 0;
 volatile unsigned int counter = 0;  // Counter variable for revolutions
 unsigned long previousMillis = 0;  // Variable to store previous time
 
-const int irSensorPin = 2;
+const int LaserSensor = 2;
 unsigned int rpm;
 volatile unsigned long count;
 
@@ -58,6 +58,7 @@ void setup() {
   unsigned long stabilizingtime = 2000;
   boolean _tare = true;
 
+
   count = 0;
   rpm = 0;
  
@@ -73,8 +74,8 @@ void setup() {
         //Serial.println("Startup is complete");
   }
 
-  pinMode(irSensorPin, INPUT);
-  attachInterrupt(digitalPinToInterrupt(irSensorPin), IRinterrupt, FALLING);
+  pinMode(LaserSensor, INPUT);
+  attachInterrupt(digitalPinToInterrupt(LaserSensor), IRinterrupt, FALLING);
 
   LC.onRun(LC_code);
   CS.onRun(CS_code);
@@ -109,10 +110,10 @@ void TM_code(){
   unsigned long currentMillis = millis();
 
   if (currentMillis - previousMillis >= 1000) {
-    detachInterrupt(digitalPinToInterrupt(irSensorPin));
+    detachInterrupt(digitalPinToInterrupt(LaserSensor));
     rpm = (counter / 3) * 60;  // Calculate RPM
     counter = 0;
-    attachInterrupt(digitalPinToInterrupt(irSensorPin), IRinterrupt, FALLING);
+    attachInterrupt(digitalPinToInterrupt(LaserSensor), IRinterrupt, FALLING);
     previousMillis = currentMillis;
     vals[0] = rpm;
   }
@@ -176,6 +177,6 @@ void callibration(){
   cs_callibration_factor = cs_callibration_factor + average;
   }
   cs_callibration_factor = cs_callibration_factor/5;
-  Serial.print("Callibration factor : ");
-  Serial.println(cs_callibration_factor);
+//  Serial.print("Callibration factor : ");
+//  Serial.println(cs_callibration_factor);
 }
