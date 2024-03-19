@@ -16,7 +16,8 @@
 
 
 // FOR LOAD CELL
-float calibrationFactor;
+float motor_mass = 60;   // motor_wiring
+float calibrationFactor = -0.001276;
 
 // FOR TACHOMETER
 unsigned int rpm=0;
@@ -55,6 +56,11 @@ void setup() {
   ESC.write(0);
   callibration();
 
+  scale.set_scale(-400000);
+  
+  // Tare the scale
+  scale.tare();
+
   pinMode(LaserSensor, INPUT);
   attachInterrupt(digitalPinToInterrupt(LaserSensor), IRinterrupt, FALLING);
 
@@ -70,21 +76,24 @@ void setup() {
 }
 
 void loop() {
-  for (int i = 0; i<=10;i++){
-    run_cycle(18*i);
+  for (int i = 0; i<=20;i++){
+    run_cycle(9*i);
   }
-  ESC.write(0);
-  delay(5000);
-  memset(vals, 0, sizeof(vals));
+  kill_code();
+
 }
-
-
 
 void IRinterrupt() {
   counter++;
 }
 
-
+void kill_code()
+{
+  while(true)
+  {
+    ESC.write(0);
+  }
+}
 
 void TM_code(){
   unsigned long currentMillis = millis();
@@ -107,10 +116,9 @@ void VS_code(){
 }
 
 void LC_code(){
-  long rawValue = scale.read();
-  float calibrationFactor = 0.00332;
-  float massInGrams = rawValue * calibrationFactor;
-  float final_mass = 270 - massInGrams;
+  //long rawValue = scale.read();
+  //float massInGrams = rawValue * calibrationFactor;
+  float final_mass = abs(scale.get_units()*1000);
   vals[1] = final_mass;
   delay(100);
 }
@@ -156,8 +164,15 @@ void callibration(){
 
 void run_cycle(int percentage){
   ESC.write(percentage);
-  delay(50);
-  control.run();
-  Serial.println(String(vals[0])+" "+String(vals[1])+" "+String(vals[2])+" "+String(vals[3]));
-  delay(1000);
+  Serial.print("throttle %: ");
+  Serial.println(percentage*10/18);
+  delay(500);
+  for(int i=0; i<=2; i++)
+  {
+    control.run();
+    Serial.println(String(vals[0])+" "+String(vals[1])+" "+String(vals[2])+" "+String(vals[3]));
+    memset(vals,0,sizeof(vals));
+  }
+  Serial.println();
+  delay(100);
 }
