@@ -3,7 +3,7 @@ import serial
 import csv
 #import pdb
 
-ser = serial.Serial('COM5',9600)
+ser = serial.Serial('COM32',9600)
 fig1 = plt.figure(figsize=(7,3))
 fig2 = plt.figure(figsize=(7,3))
 fig3 = plt.figure(figsize=(7,3))
@@ -34,11 +34,14 @@ ser.close()
 ser.open()
 ctr =0
 k = 0
+throttle_percet = 0
+throttle_percet_ctr = 1
+throttle = []
 for i in range(l):
     ser1 = ser.readline().decode('ascii')
     a1=[]
     ser_array = [float(val) for val in ser1[:-2].split()]  # Assuming values are space-separated
-    with open('abc.csv', 'a', encoding='UTF8') as f:
+    with open('abc.csv', 'w', encoding='UTF8') as f:
         writer = csv.writer(f)
         writer.writerow(ser_array)
     a1.extend(ser_array)
@@ -74,10 +77,20 @@ for i in range(l):
     x_vals[3] =i
     plt.ylabel('Thrust', fontweight='bold', horizontalalignment='center')
     #plt.ylabel('RPM', fontweight='bold', horizontalalignment='center')
-    ax4.plot(thrust_vals,color='b')
+    
+    if(throttle_percet_ctr == 4):
+        throttle_percet_ctr =1
+        throttle_percet += 1 
+
+    throttle.append(9*throttle_percet *10/18)
+    print(throttle[i])
+    
+    ax4.plot(throttle, thrust_vals,color='b')
     fig4.canvas.draw()
-    ax4.set_xlim(left=max(0,x_vals[3]-30), right=x_vals[3]+60)
+    #ax4.set_xlim(left=max(0,x_vals[3]-30), right=x_vals[3]+60)
     ctr = ctr+1
+    throttle_percet_ctr +=1
+    
     plt.pause(0.0001)
 
 
