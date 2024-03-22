@@ -4,20 +4,15 @@ import csv
 #import pdb
 
 ser = serial.Serial('COM32',9600)
-fig1 = plt.figure(figsize=(7,3))
-fig2 = plt.figure(figsize=(7,3))
-fig3 = plt.figure(figsize=(7,3))
-fig4 = plt.figure(figsize=(7,3))
 
-ax1 = fig1.add_subplot()
-ax2 = fig2.add_subplot()
-ax3 = fig3.add_subplot()
-ax4 = fig4.add_subplot()
+fig1 = plt.figure(figsize=(7,3))
+
+ax1 = fig1.add_subplot(221)
+ax2 = fig1.add_subplot(222)
+ax3 = fig1.add_subplot(223)
+ax4 = fig1.add_subplot(224)
 
 fig1.show()
-fig2.show()
-fig3.show()
-fig4.show()
 
 a1=[]
 
@@ -41,7 +36,7 @@ for i in range(l):
     ser1 = ser.readline().decode('ascii')
     a1=[]
     ser_array = [float(val) for val in ser1[:-2].split()]  # Assuming values are space-separated
-    with open('abc.csv', 'w', encoding='UTF8') as f:
+    with open('abc.csv', 'a', encoding='UTF8') as f:
         writer = csv.writer(f)
         writer.writerow(ser_array)
     a1.extend(ser_array)
@@ -53,30 +48,6 @@ for i in range(l):
     #print(current_vals[ctr])
     #print(voltage_vals[ctr])
     
-    x_vals[0] =i
-    plt.ylabel('current(mA)', fontweight='bold', horizontalalignment='center')
-    #plt.ylabel('RPM', fontweight='bold', horizontalalignment='center')
-    ax1.plot(current_vals,color='b')
-    fig1.canvas.draw()
-    ax1.set_xlim(left=max(0,x_vals[0]-30), right=x_vals[0]+60)
-    
-    x_vals[1] =i
-    plt.ylabel('Voltage(V)', fontweight='bold', horizontalalignment='center')
-    #plt.ylabel('RPM', fontweight='bold', horizontalalignment='center')
-    ax2.plot(voltage_vals,color='b')
-    fig2.canvas.draw()
-    ax2.set_xlim(left=max(0,x_vals[1]-30), right=x_vals[1]+60)
-    
-    x_vals[2] =i
-    plt.ylabel('RPM', fontweight='bold', horizontalalignment='center')
-    #plt.ylabel('RPM', fontweight='bold', horizontalalignment='center')
-    ax3.plot(rpm_vals,color='b')
-    fig3.canvas.draw()
-    ax3.set_xlim(left=max(0,x_vals[2]-30), right=x_vals[2]+60)
-    
-    x_vals[3] =i
-    plt.ylabel('Thrust', fontweight='bold', horizontalalignment='center')
-    #plt.ylabel('RPM', fontweight='bold', horizontalalignment='center')
     
     if(throttle_percet_ctr == 4):
         throttle_percet_ctr =1
@@ -85,12 +56,45 @@ for i in range(l):
     throttle.append(9*throttle_percet *10/18)
     print(throttle[i])
     
-    ax4.plot(throttle, thrust_vals,color='b')
-    fig4.canvas.draw()
+    x_vals[0] =i
+    plt.ylabel('Thrust (g)', fontweight='bold', horizontalalignment='center')
+    plt.xlabel('Throttle %', fontweight='bold', horizontalalignment='center')
+    #plt.ylabel('RPM', fontweight='bold', horizontalalignment='center')
+    plt.subplot(2, 2, 1)
+    ax1.scatter(throttle,current_vals,color='b')
+    #fig1.canvas.draw()
+    #ax1.set_xlim(left=max(0,x_vals[0]-30), right=x_vals[0]+60)
+    
+    x_vals[1] =i
+    plt.ylabel('current(A)', fontweight='bold', horizontalalignment='center')
+    plt.xlabel('Throttle %', fontweight='bold', horizontalalignment='center')
+    #plt.ylabel('RPM', fontweight='bold', horizontalalignment='center')
+    plt.subplot(2, 2, 2)
+    ax2.scatter(throttle,voltage_vals,color='b')
+    #fig1.canvas.draw()
+    #ax2.set_xlim(left=max(0,x_vals[1]-30), right=x_vals[1]+60)
+    
+    x_vals[2] =i
+    plt.ylabel('Voltage(V)', fontweight='bold', horizontalalignment='center')
+    plt.xlabel('Throttle %', fontweight='bold', horizontalalignment='center')
+    #plt.ylabel('RPM', fontweight='bold', horizontalalignment='center')
+    plt.subplot(2, 2, 3)
+    ax3.scatter(throttle,rpm_vals,color='b')
+    #fig1.canvas.draw()
+    #ax3.set_xlim(left=max(0,x_vals[2]-30), right=x_vals[2]+60)
+    
+    x_vals[3] =i
+    plt.ylabel('RPM', fontweight='bold', horizontalalignment='center')
+    plt.xlabel('Throttle %', fontweight='bold', horizontalalignment='center')
+    #plt.ylabel('RPM', fontweight='bold', horizontalalignment='center')
+    plt.subplot(2, 2, 4)
+    ax4.scatter(throttle, thrust_vals,color='b')
+    
     #ax4.set_xlim(left=max(0,x_vals[3]-30), right=x_vals[3]+60)
     ctr = ctr+1
     throttle_percet_ctr +=1
     
+    fig1.canvas.draw()
     plt.pause(0.0001)
 
 
